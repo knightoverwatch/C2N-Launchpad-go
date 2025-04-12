@@ -10,10 +10,7 @@ type DsnProvider interface {
 	Dsn() string
 }
 
-// Embeded 结构体可以压平到上一层，从而保持 config 文件的结构和原来一样
-// 见 playground: https://go.dev/play/p/KIcuhqEoxmY
-
-// GeneralDB 也被 Pgsql 和 Mysql 原样使用
+// 通用数据库结构体
 type GeneralDB struct {
 	Prefix       string `mapstructure:"prefix" json:"prefix" yaml:"prefix"`                         // 数据库前缀
 	Port         string `mapstructure:"port" json:"port" yaml:"port"`                               // 数据库端口
@@ -31,6 +28,7 @@ type GeneralDB struct {
 }
 
 func (c GeneralDB) LogLevel() logger.LogLevel {
+	// 根据配置中的日志模式字符串返回相应的日志级别
 	switch strings.ToLower(c.LogMode) {
 	case "silent":
 		return logger.Silent
@@ -45,9 +43,10 @@ func (c GeneralDB) LogLevel() logger.LogLevel {
 	}
 }
 
+// 特殊化数据库结构体
 type SpecializedDB struct {
+	GeneralDB `yaml:",inline" mapstructure:",squash"`
 	Type      string `mapstructure:"type" json:"type" yaml:"type"`
 	AliasName string `mapstructure:"alias-name" json:"alias-name" yaml:"alias-name"`
-	GeneralDB `yaml:",inline" mapstructure:",squash"`
-	Disable   bool `mapstructure:"disable" json:"disable" yaml:"disable"`
+	Disable   bool   `mapstructure:"disable" json:"disable" yaml:"disable"`
 }
